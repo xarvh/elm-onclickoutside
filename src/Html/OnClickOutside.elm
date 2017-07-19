@@ -1,6 +1,6 @@
-module Html.OnClickOutside exposing (withId, succeedIfClickIsOustideOfId)
+module Html.OnClickOutside exposing (onLoseFocus, succeedIfClickIsOustideOfClass)
 
-{-| @docs withId, succeedIfClickIsOustideOfId
+{-| @docs onLoseFocus, succeedIfClickIsOustideOfClass
 -}
 
 import Html
@@ -13,14 +13,20 @@ import Json.Decode as Decode exposing (Decoder)
     flip Decode.andThen
 
 
-succeedIfBloodlineHasId : String -> Decoder ()
-succeedIfBloodlineHasId targetId =
-    Decode.field "id" Decode.string
-        &> \id ->
-            if id == targetId then
-                Decode.succeed ()
-            else
-                Decode.field "parentNode" (succeedIfBloodlineHasId targetId)
+succeedIfBloodlineHasClass : String -> Decoder ()
+succeedIfBloodlineHasClass targetClassName =
+    let
+        hasTargetClass className =
+            className
+                |> String.split " "
+                |> List.member targetClassName
+    in
+        Decode.field "className" Decode.string
+            &> \classString ->
+                if hasTargetClass classString then
+                    Decode.succeed ()
+                else
+                    Decode.field "parentNode" (succeedIfBloodlineHasClass targetClassName)
 
 
 invertDecoder : Decoder a -> Decoder ()
@@ -42,9 +48,9 @@ given DOM id.
 It will succeed otherwise.
 
 -}
-succeedIfClickIsOustideOfId : String -> Decoder ()
-succeedIfClickIsOustideOfId targetId =
-    succeedIfBloodlineHasId targetId
+succeedIfClickIsOustideOfClass : String -> Decoder ()
+succeedIfClickIsOustideOfClass targetClassName =
+    succeedIfBloodlineHasClass targetClassName
         |> Decode.field "relatedTarget"
         |> invertDecoder
 
@@ -63,9 +69,16 @@ on the attributes, you will have to use
 [succeedIfClickIsOustideOfId](#succeedIfClickIsOustideOfId) instead.
 
 -}
-withId : String -> msg -> List (Html.Attribute msg)
-withId id onClickOutsideMsg =
-    [ Html.Attributes.tabindex 0
-    , Html.Attributes.id id
-    , Html.Events.on "focusout" <| Decode.map (always onClickOutsideMsg) (succeedIfClickIsOustideOfId id)
-    ]
+onLoseFocus : msg -> List (Html.Attribute msg)
+onLoseFocus onClickOutsideMsg =
+    let
+        targetClassName =
+            "ElmOnClickOutsideTarget"
+
+        eventDecoder =
+            succeedIfClickIsOustideOfClass targetClassName
+    in
+        [ Html.Attributes.tabindex 0
+        , Html.Attributes.class targetClassName
+        , Html.Events.on "focusout" <| Decode.map (always onClickOutsideMsg) eventDecoder
+        ]
