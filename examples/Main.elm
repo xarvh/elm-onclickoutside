@@ -8,7 +8,9 @@ import Html.OnClickOutside
 
 
 type DropdownId
-    = DropdownBlur1
+    = DropdownNone1
+    | DropdownNone2
+    | DropdownBlur1
     | DropdownBlur2
     | DropdownFocusout1
     | DropdownFocusout2
@@ -114,11 +116,16 @@ view model =
             [ div
                 [ style
                     [ ( "display", "grid" )
-                    , ( "grid-template-columns", "1fr 1fr 1fr" )
-                    , ( "width", "800px" )
+                    , ( "grid-template-columns", "1fr 1fr" )
                     ]
                 ]
                 [ div
+                    []
+                    [ text "no listener"
+                    , dropdown DropdownNone1 model.maybeOpenDropdown (always [])
+                    , dropdown DropdownNone2 model.maybeOpenDropdown (always [])
+                    ]
+                , div
                     []
                     [ text "blur event"
                     , dropdown DropdownBlur1 model.maybeOpenDropdown blurAttributes
