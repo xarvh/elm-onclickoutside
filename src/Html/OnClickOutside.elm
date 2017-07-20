@@ -43,7 +43,7 @@ invertDecoder decoder =
 [FocusEvent](https://developer.mozilla.org/en-US/docs/Web/API/FocusEvent).
 
 It will *fail* if `event.relatedTarget` or any of its ancestors have the
-given DOM id.
+given DOM class.
 
 It will succeed otherwise.
 
@@ -55,18 +55,14 @@ succeedIfClickIsOustideOfClass targetClassName =
         |> invertDecoder
 
 
-{-| The first argument is the DOM id that you want to assign to the element.
-
-The second argument is the message that you want to trigger when the user
-clicks outside the element.
-
-The function returns a list of Html.Attributes to apply to the element.
-
-The attributes are `tabindex`, `id` and the `focusout` event handler.
-
-This function is meant to cover most use cases, but if you need more control
-on the attributes, you will have to use
+{-| This is the main fuction of the module, and the one you should be using most of the times.
+If you need more control on the attributes, you will have to use
 [succeedIfClickIsOustideOfId](#succeedIfClickIsOustideOfId) instead.
+
+The argument is the message to trigger when the target element and its children lose focus.
+
+The function returns a list of Html.Attributes to apply to the element to detect outside clicks.
+The attributes are `tabindex`, `class` and the `focusout` event handler.
 
 -}
 onLoseFocus : msg -> List (Html.Attribute msg)
