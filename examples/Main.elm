@@ -1,13 +1,17 @@
 module Main exposing (..)
 
+import Json.Decode
 import Html exposing (..)
-import Html.Attributes exposing (style, type_, tabindex)
-import Html.Events exposing (onClick, onBlur)
+import Html.Attributes exposing (style)
+import Html.Events
 import Html.OnClickOutside
 
 
 type DropdownId
-    = DropdownBlur
+    = DropdownBlur1
+    | DropdownBlur2
+    | DropdownFocusout1
+    | DropdownFocusout2
     | DropdownOnClickOutside1
     | DropdownOnClickOutside2
 
@@ -22,7 +26,7 @@ type Msg
 
 update : Msg -> Model -> Model
 update msg model =
-    case Debug.log "-" msg of
+    case msg of
         SelectDropdown maybeDropdownId ->
             { model | maybeOpenDropdown = maybeDropdownId }
 
@@ -51,18 +55,27 @@ dropdown id maybeOpenDropdown makeAttributes =
 
         trigger =
             div
-                [ onClick triggerMsg ]
+                [ Html.Events.onClick triggerMsg
+                , style
+                    [ ( "border", "1px solid" )
+                    , ( "background-color", "#bbb" )
+                    ]
+                ]
                 [ text <| toString id ]
 
         checkbox =
-            input [ type_ "checkbox" ] []
+            input [ Html.Attributes.type_ "checkbox" ] []
 
         content =
             if not isOpen then
                 text ""
             else
                 div
-                    []
+                    [ style
+                        [ ( "border", "1px solid" )
+                        , ( "background-color", "#ccc" )
+                        ]
+                    ]
                     [ checkbox
                     , checkbox
                     ]
@@ -71,6 +84,7 @@ dropdown id maybeOpenDropdown makeAttributes =
             (style
                 [ ( "position", "relative" )
                 , ( "margin-top", "1rem" )
+                , ( "width", "200px" )
                 ]
                 :: attributes
             )
@@ -81,29 +95,54 @@ dropdown id maybeOpenDropdown makeAttributes =
 
 view : Model -> Html Msg
 view model =
-    div
-        [ style
-            [ ( "", "" )
-            , ( "", "" )
+    let
+        blurAttributes msg =
+            [ Html.Events.onBlur msg
+            , Html.Attributes.tabindex 0
             ]
-        ]
-        [ dropdown
-            DropdownBlur
-            model.maybeOpenDropdown
-            (\msg ->
-                [ onBlur msg
-                , tabindex 0
+
+        focusoutAttributes msg =
+            [ Html.Events.on "focusout" (Json.Decode.succeed msg)
+            , Html.Attributes.tabindex 0
+            ]
+
+        onClickOutsideAttributes msg =
+            Html.OnClickOutside.onLoseFocus msg
+    in
+        div
+            []
+            [ div
+                [ style
+                    [ ( "display", "grid" )
+                    , ( "grid-template-columns", "1fr 1fr 1fr" )
+                    , ( "width", "800px" )
+                    ]
                 ]
-            )
-        , dropdown
-            DropdownOnClickOutside1
-            model.maybeOpenDropdown
-            (\msg -> Html.OnClickOutside.onLoseFocus msg)
-        , dropdown
-            DropdownOnClickOutside2
-            model.maybeOpenDropdown
-            (\msg -> Html.OnClickOutside.onLoseFocus msg)
-        ]
+                [ div
+                    []
+                    [ text "blur event"
+                    , dropdown DropdownBlur1 model.maybeOpenDropdown blurAttributes
+                    , dropdown DropdownBlur2 model.maybeOpenDropdown blurAttributes
+                    ]
+                , div
+                    []
+                    [ text "focusout event"
+                    , dropdown DropdownFocusout1 model.maybeOpenDropdown focusoutAttributes
+                    , dropdown DropdownFocusout2 model.maybeOpenDropdown focusoutAttributes
+                    ]
+                , div
+                    []
+                    [ text "OnClickOutside.onLoseFocus"
+                    , dropdown DropdownOnClickOutside1 model.maybeOpenDropdown onClickOutsideAttributes
+                    , dropdown DropdownOnClickOutside2 model.maybeOpenDropdown onClickOutsideAttributes
+                    ]
+                ]
+            , div
+                [ style
+                    [ ( "margin-top", "1rem" ) ]
+                ]
+                [ text "If the dropdown contains any tabindexed element, clicking on that element will close the dropdown" ]
+            ]
 
 
 
