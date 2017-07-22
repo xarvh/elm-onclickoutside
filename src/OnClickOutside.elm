@@ -1,6 +1,6 @@
-module Html.OnClickOutside exposing (onLoseFocus, succeedIfClickIsOustideOfClass)
+module OnClickOutside exposing (dropdown, succeedIfClickIsOustideOfClass)
 
-{-| @docs onLoseFocus, succeedIfClickIsOustideOfClass
+{-| @docs dropdown, succeedIfClickIsOustideOfClass
 -}
 
 import Html
@@ -55,18 +55,24 @@ succeedIfClickIsOustideOfClass targetClassName =
         |> invertDecoder
 
 
-{-| This is the main fuction of the module, and the one you should be using most of the times.
-If you need more control on the attributes, you will have to use
-[succeedIfClickIsOustideOfId](#succeedIfClickIsOustideOfId) instead.
+{-| This is the main fuction of the module, and the one you should be using
+most of the times.
 
-The argument is the message to trigger when the target element and its children lose focus.
+This function returns a list of attributes that you should add to the root
+elements of all your dropdowns.
 
-The function returns a list of Html.Attributes to apply to the element to detect outside clicks.
+The given message will be triggered only when a click happens outside of *all*
+dropdowns.
+
 The attributes are `tabindex`, `class` and the `focusout` event handler.
 
+If you need more control over the attributes, you can specify them manually
+and then use [succeedIfClickIsOustideOfId](#succeedIfClickIsOustideOfId) to
+decode the event.
+
 -}
-onLoseFocus : msg -> List (Html.Attribute msg)
-onLoseFocus onClickOutsideMsg =
+dropdown : msg -> List (Html.Attribute msg)
+dropdown onClickOutsideMsg =
     let
         targetClassName =
             "ElmOnClickOutsideTarget"
